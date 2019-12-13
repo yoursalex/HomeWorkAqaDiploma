@@ -30,7 +30,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.1'
     testImplementation 'com.codeborne:selenide:5.3.1'
     testImplementation 'io.qameta.allure:allure-selenide:2.13.0'
-    implementation 'com.github.javafaker:javafaker:1.0.1' // удалить, если не будет в итоге использован
+    testImplementation 'mysql:mysql-connector-java:8.0.18'
+    implementation 'com.github.javafaker:javafaker:1.0.1'
 }
 
 test {
