@@ -3,6 +3,7 @@ package tests;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import com.github.javafaker.Faker;
 import data.Card;
+import data.SQLHelper;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.*;
 import lombok.val;
@@ -12,12 +13,13 @@ import page.CreditPage;
 import page.PaymentPage;
 import page.StartPage;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import static com.codeborne.selenide.Selenide.open;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PurchaseTests {
@@ -32,6 +34,11 @@ public class PurchaseTests {
         setCards();
     }
 
+    @AfterEach
+    void cleanTables() throws SQLException {
+        SQLHelper.cleanTables();
+    }
+
     @BeforeAll
     static void setUpAll() {
         SelenideLogger.addListener("allure", new AllureSelenide());
@@ -44,13 +51,13 @@ public class PurchaseTests {
 
     @Test
     @DisplayName("Должен подтверждать оплату при валидных данных и карте со статусом APPROVED")
-    void shouldConfirmPaymentWithValidDataCardOne() {
+    void shouldConfirmPaymentWithValidDataCardOne() throws SQLException {
         assertTrue(paymentPage(cardOne).notificationOkIsVisible());
-        // дополнить проверкой БД
+        assertEquals(SQLHelper.findStatus(), "APPROVED");
     }
 
     @Test
-    @DisplayName("Должег подтверждать кредит при валидных данных и карте со статусом APPROVED")
+    @DisplayName("Должен подтверждать кредит при валидных данных и карте со статусом APPROVED")
     void shouldConfirmCreditWithValidDataCardOne() {
         assertTrue(creditPage(cardOne).notificationOkIsVisible());
         // дополнить проверкой БД
@@ -58,14 +65,14 @@ public class PurchaseTests {
 
     @Test
     @DisplayName("Не должен подтверждать оплату при использовании карты со статусом DECLINED")
-    void shouldNotConfirmPaymentWithInvalidCardTwo() {
+    void shouldNotConfirmPaymentWithInvalidCardTwo() throws SQLException{
         assertTrue(paymentPage(cardTwo).notificationErrorIsVisible());
         // дополнить проверкой БД
     }
 
     @Test
     @DisplayName("Не должен подтверждать кредит при использовании карты со статусом DECLINED")
-    void shouldNotConfirmCreditWithInvalidCardTwo() {
+    void shouldNotConfirmCreditWithInvalidCardTwo() throws SQLException {
         assertTrue(creditPage(cardTwo).notificationErrorIsVisible());
         // дополнить проверкой БД
     }

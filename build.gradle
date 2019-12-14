@@ -12,7 +12,6 @@ sourceCompatibility = 1.8
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
 
-
 allure {
     autoconfigure = true
     version = '2.13.0' // Latest Allure Version
@@ -32,7 +31,9 @@ dependencies {
     testImplementation 'io.qameta.allure:allure-selenide:2.13.0'
     testImplementation 'mysql:mysql-connector-java:8.0.18'
     implementation 'com.github.javafaker:javafaker:1.0.1'
+    testImplementation 'commons-dbutils:commons-dbutils:1.7'
 }
+
 
 test {
     useJUnitPlatform()
