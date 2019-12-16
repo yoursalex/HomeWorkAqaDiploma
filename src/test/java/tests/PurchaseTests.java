@@ -19,8 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import static com.codeborne.selenide.Selenide.open;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PurchaseTests {
 
@@ -50,52 +49,58 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Должен подтверждать оплату при валидных данных и карте со статусом APPROVED")
+    @DisplayName("Должен подтверждать оплату и создавать payment_id при валидных данных и карте со статусом APPROVED")
     void shouldConfirmPaymentWithValidDataCardOne() throws SQLException {
         assertTrue(paymentPage(cardOne).notificationOkIsVisible());
-        assertEquals(SQLHelper.findStatus(), "APPROVED");
+        assertEquals(SQLHelper.findPaymentStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findPaymentId());
     }
 
     @Test
-    @DisplayName("Должен подтверждать кредит при валидных данных и карте со статусом APPROVED")
-    void shouldConfirmCreditWithValidDataCardOne() {
+    @DisplayName("Должен подтверждать кредит и создавать credit_id при валидных данных и карте со статусом APPROVED")
+    void shouldConfirmCreditWithValidDataCardOne() throws SQLException {
         assertTrue(creditPage(cardOne).notificationOkIsVisible());
-        // дополнить проверкой БД
+        assertEquals(SQLHelper.findCreditStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findCreditId());
     }
 
     @Test
-    @DisplayName("Не должен подтверждать оплату при использовании карты со статусом DECLINED")
+    @DisplayName("Не должен подтверждать оплату и создавать payment_id при использовании карты со статусом DECLINED")
     void shouldNotConfirmPaymentWithInvalidCardTwo() throws SQLException{
         assertTrue(paymentPage(cardTwo).notificationErrorIsVisible());
-        // дополнить проверкой БД
+        assertEquals(SQLHelper.findPaymentStatus(), "DECLINED");
+        assertNull(SQLHelper.findPaymentId());
     }
 
     @Test
-    @DisplayName("Не должен подтверждать кредит при использовании карты со статусом DECLINED")
+    @DisplayName("Не должен подтверждать кредит и создавать credit_id при использовании карты со статусом DECLINED")
     void shouldNotConfirmCreditWithInvalidCardTwo() throws SQLException {
         assertTrue(creditPage(cardTwo).notificationErrorIsVisible());
-        // дополнить проверкой БД
+        assertEquals(SQLHelper.findCreditStatus(), "DECLINED");
+        assertNull(SQLHelper.findCreditId());
     }
 
     // Негативные сценарии с номером карты при оплате:
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongCard.cvs", numLinesToSkip = 1)
-    void shouldNotSubmitPaymentWithWrongNumber(String number, String message) {
+    void shouldNotSubmitPaymentWithWrongNumber(String number, String message) throws SQLException {
         cardOne.setNumber(number);
         assertTrue(paymentPage(cardOne).inputInvalidFormat(), message);
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
     @DisplayName("Не должен подтверждать оплату при невалидном номере карты")
-    void shouldNotSubmitPaymentWithIllegalCard() {
+    void shouldNotSubmitPaymentWithIllegalCard() throws SQLException {
         cardOne.setNumber("4444 4444 4444 4444");
         assertTrue(paymentPage(cardOne).notificationErrorIsVisible());
-    }
+        assertFalse(SQLHelper.isNotEmpty());
+}
 
     @Test
-    @DisplayName("Оплата.После ввода валидного номера карты, предупреждающая надпись исчезает")
-    void shouldNotShowWarningIfValidCardNumberUpdatedForPayment() {
+    @DisplayName("Оплата.После ввода валидного номера карты, предупреждающая надпись исчезает, оплата проходит успешно")
+    void shouldNotShowWarningIfValidCardNumberUpdatedForPayment() throws SQLException {
         cardOne.setNumber("4444 4444 44");
         val paymentPage = openStartPage().paymentPage();
         paymentPage.fillData(cardOne);
@@ -105,28 +110,31 @@ public class PurchaseTests {
         paymentPage.fillData(cardOne);
         assertTrue(paymentPage.inputInvalidIsNotVisible());
         assertTrue(paymentPage.notificationOkIsVisible());
-        // добавить проверку БД
+        assertEquals(SQLHelper.findPaymentStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findPaymentId());
     }
 
     // Негативные сценарии с номером карты при кредите:
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongCard.cvs", numLinesToSkip = 1)
-    void shouldNotSubmitCreditWithWrongNumber(String number, String message) {
+    void shouldNotSubmitCreditWithWrongNumber(String number, String message) throws SQLException {
         cardOne.setNumber(number);
         assertTrue(creditPage(cardOne).inputInvalidFormat(), message);
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
     @DisplayName("Не должен подтверждать кредит при невалидном номере карты")
-    void shouldNotSubmitCreditWithIllegalCard() {
+    void shouldNotSubmitCreditWithIllegalCard() throws SQLException{
         cardOne.setNumber("4444 4444 4444 4444");
         assertTrue(creditPage(cardOne).notificationErrorIsVisible());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
-    @DisplayName("Кредит.После ввода валидного номера карты, предупреждающая надпись исчезает")
-    void shouldNotShowWarningIfValidCardNumberUpdatedForCredit() {
+    @DisplayName("Кредит.После ввода валидного номера карты, предупреждающая надпись исчезает, кредит подтвержден")
+    void shouldNotShowWarningIfValidCardNumberUpdatedForCredit() throws SQLException{
         cardOne.setNumber("4444 4444 44");
         val creditPage = openStartPage().creditPage();
         creditPage.fillData(cardOne);
@@ -136,42 +144,47 @@ public class PurchaseTests {
         creditPage.fillData(cardOne);
         assertTrue(creditPage.inputInvalidIsNotVisible());
         assertTrue(creditPage.notificationOkIsVisible());
-        // добавить проверку БД
+        assertEquals(SQLHelper.findCreditStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findCreditId());
     }
 
     // Негативные сценарии с датой при оплате:
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongMonth.cvs", numLinesToSkip = 1)
-    void shouldNotSubmitPaymentWithWrongMonth(String month, String message) {
+    void shouldNotSubmitPaymentWithWrongMonth(String month, String message) throws SQLException {
         cardOne.setMonth(month);
         assertTrue((paymentPage(cardOne).inputInvalidFormat()), message);
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
     @DisplayName("Не должен подтверждать оплату, если введен несуществующий месяц")
-    void shouldNotConfirmPaymentWithInvalidMonth() {
+    void shouldNotConfirmPaymentWithInvalidMonth() throws SQLException {
         cardOne.setMonth("22");
         assertTrue(paymentPage(cardOne).inputInvalidMonth());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
     @DisplayName("Не должен подтверждать оплату без указания года")
-    void shouldNotConfirmPaymentIfEmptyYear() {
+    void shouldNotConfirmPaymentIfEmptyYear() throws SQLException {
         cardOne.setYear("");
         assertTrue(paymentPage(cardOne).inputInvalidFormat());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
     @DisplayName("Не должен подтверждать оплату, если год меньше текущего")
-    void shouldNotConfirmPaymentWithOldYear() {
+    void shouldNotConfirmPaymentWithOldYear() throws SQLException {
         cardOne.setYear(setWrongYear());
         assertTrue(paymentPage(cardOne).inputInvalidExpireDate());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
-    @DisplayName("Оплата. После ввода валидной даты предупреждающая надпись исчезает")
-    void shouldNotShowWarningIfValidDateUpdatedForPayment() {
+    @DisplayName("Оплата. После ввода валидной даты предупреждающая надпись исчезает, оплата проходит успешно")
+    void shouldNotShowWarningIfValidDateUpdatedForPayment() throws SQLException{
         cardOne.setMonth("");
         cardOne.setYear("");
         val paymentPage = openStartPage().paymentPage();
@@ -183,42 +196,47 @@ public class PurchaseTests {
         paymentPage.fillData(cardOne);
         assertTrue(paymentPage.inputInvalidIsNotVisible());
         assertTrue(paymentPage.notificationOkIsVisible());
-        // добавить проверку БД
+        assertEquals(SQLHelper.findPaymentStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findPaymentId());
     }
 
     // Негативные сценарии с датой при кредите:
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongMonth.cvs", numLinesToSkip = 1)
-    void shouldNotSubmitCreditWithWrongMonth(String month, String message) {
+    void shouldNotSubmitCreditWithWrongMonth(String month, String message) throws SQLException{
         cardOne.setMonth(month);
         assertTrue((creditPage(cardOne).inputInvalidFormat()), message);
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
     @DisplayName("Не должен подтверждать оплату, если введен несуществующий месяц")
-    void shouldNotConfirmCreditWithInvalidMonth() {
+    void shouldNotConfirmCreditWithInvalidMonth() throws SQLException{
         cardOne.setMonth("22");
         assertTrue(creditPage(cardOne).inputInvalidMonth());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
     @DisplayName("Не должен подтверждать оплату без указания года")
-    void shouldNotConfirmCreditIfEmptyYear() {
+    void shouldNotConfirmCreditIfEmptyYear() throws SQLException{
         cardOne.setYear("");
         assertTrue(creditPage(cardOne).inputInvalidFormat());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
     @DisplayName("Не должен подтверждать оплату, если год меньше текущего")
-    void shouldNotConfirmCreditWithOldYear() {
+    void shouldNotConfirmCreditWithOldYear() throws SQLException{
         cardOne.setYear(setWrongYear());
         assertTrue(creditPage(cardOne).inputInvalidExpireDate());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
-    @DisplayName("Кредит. После ввода валидной даты предупреждающая надпись исчезает")
-    void shouldNotShowWarningIfValidDateUpdatedForCredit() {
+    @DisplayName("Кредит. После ввода валидной даты предупреждающая надпись исчезает, кредит подтвержден")
+    void shouldNotShowWarningIfValidDateUpdatedForCredit() throws SQLException {
         cardOne.setMonth("");
         cardOne.setYear("");
         val creditPage = openStartPage().creditPage();
@@ -230,28 +248,31 @@ public class PurchaseTests {
         creditPage.fillData(cardOne);
         assertTrue(creditPage.inputInvalidIsNotVisible());
         assertTrue(creditPage.notificationOkIsVisible());
-        // добавить проверку БД
+        assertEquals(SQLHelper.findCreditStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findCreditId());
     }
 
     // Негативные сценарии с полем владелец при покупке:
 
     @Test
     @DisplayName("Не должен подтверждать оплату без имени владельца")
-    void shouldNotConfirmPaymentWithoutOwner() {
+    void shouldNotConfirmPaymentWithoutOwner() throws SQLException{
         cardOne.setOwner("");
         assertTrue(paymentPage(cardOne).inputInvalidFillData());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongOwner.cvs", numLinesToSkip = 1)
-    void shouldNotConfirmPaymentWithInvalidOwner(String owner) {
+    void shouldNotConfirmPaymentWithInvalidOwner(String owner) throws SQLException {
         cardOne.setOwner(owner);
         assertTrue(paymentPage(cardOne).inputInvalidFormat());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
-    @DisplayName("Оплата. После ввода валидной информации в поле владелец, предупреждающая надпись исчезает")
-    void shouldNotShowWarningIfValidOwnerUpdatedForPayment() {
+    @DisplayName("Оплата. После ввода валидной информации в поле владелец, предупреждающая надпись исчезает, оплата проходит успешно")
+    void shouldNotShowWarningIfValidOwnerUpdatedForPayment() throws SQLException {
         cardOne.setOwner("");
         val paymentPage = openStartPage().paymentPage();
         paymentPage.fillData(cardOne);
@@ -261,28 +282,31 @@ public class PurchaseTests {
         paymentPage.fillData(cardOne);
         assertTrue(paymentPage.inputInvalidIsNotVisible());
         assertTrue(paymentPage.notificationOkIsVisible());
-        // добавить проверку БД
+        assertEquals(SQLHelper.findPaymentStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findPaymentId());
     }
 
     // Негативные сценарии с полем владелец при кредите:
 
     @Test
     @DisplayName("Не должен подтверждать кредит без имени владельца")
-    void shouldNotConfirmCreditWithoutOwner() {
+    void shouldNotConfirmCreditWithoutOwner() throws SQLException{
         cardOne.setOwner("");
         assertTrue(creditPage(cardOne).inputInvalidFillData());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongOwner.cvs", numLinesToSkip = 1)
-    void shouldNotConfirmCreditWithInvalidOwner(String owner) {
+    void shouldNotConfirmCreditWithInvalidOwner(String owner) throws SQLException{
         cardOne.setOwner(owner);
         assertTrue(creditPage(cardOne).inputInvalidFormat());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
-    @DisplayName("Кредит. После ввода валидной информации в поле владелец, предупреждающая надпись исчезает")
-    void shouldNotShowWarningIfValidOwnerUpdatedForCredit() {
+    @DisplayName("Кредит. После ввода валидной информации в поле владелец, предупреждающая надпись исчезает, кредит подтвержден")
+    void shouldNotShowWarningIfValidOwnerUpdatedForCredit() throws SQLException {
         cardOne.setOwner("");
         val creditPage = openStartPage().paymentPage();
         creditPage.fillData(cardOne);
@@ -292,21 +316,23 @@ public class PurchaseTests {
         creditPage.fillData(cardOne);
         assertTrue(creditPage.inputInvalidIsNotVisible());
         assertTrue(creditPage.notificationOkIsVisible());
-        // добавить проверку БД
+        assertEquals(SQLHelper.findCreditStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findCreditId());
     }
 
     // Негативные сценарии с полем cvc/cvv при оплате:
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongCvc.cvs", numLinesToSkip = 1)
-    void shouldNotConfirmPaymentWithInvalidCvc(String cvc) {
+    void shouldNotConfirmPaymentWithInvalidCvc(String cvc) throws SQLException{
         cardOne.setCvc(cvc);
         assertTrue(paymentPage(cardOne).inputInvalidFormat());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
-    @DisplayName("Оплата. После ввода валидной информации cvc/cvv, предупреждающая надпись исчезает")
-    void shouldNotShowWarningIfValidCvcUpdatedForPayment() {
+    @DisplayName("Оплата. После ввода валидной информации cvc/cvv, предупреждающая надпись исчезает, оплата проходит успешно")
+    void shouldNotShowWarningIfValidCvcUpdatedForPayment() throws SQLException {
         cardOne.setCvc("");
         val paymentPage = openStartPage().paymentPage();
         paymentPage.fillData(cardOne);
@@ -316,21 +342,23 @@ public class PurchaseTests {
         paymentPage.fillData(cardOne);
         assertTrue(paymentPage.inputInvalidIsNotVisible());
         assertTrue(paymentPage.notificationOkIsVisible());
-        // добавить проверку БД
+        assertEquals(SQLHelper.findPaymentStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findPaymentId());
     }
 
     // Негативные сценарии с полем cvc/cvv при кредите:
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongCvc.cvs", numLinesToSkip = 1)
-    void shouldNotConfirmCreditWithInvalidCvc(String cvc) {
+    void shouldNotConfirmCreditWithInvalidCvc(String cvc) throws SQLException {
         cardOne.setCvc(cvc);
         assertTrue(creditPage(cardOne).inputInvalidFormat());
+        assertFalse(SQLHelper.isNotEmpty());
     }
 
     @Test
-    @DisplayName("Кредит. После ввода валидной информации cvc/cvv, предупреждающая надпись исчезает")
-    void shouldNotShowWarningIfValidCvcUpdatedForCredit() {
+    @DisplayName("Кредит. После ввода валидной информации cvc/cvv, предупреждающая надпись исчезает, кредит подтвержден")
+    void shouldNotShowWarningIfValidCvcUpdatedForCredit() throws SQLException{
         cardOne.setCvc("");
         val creditPage = openStartPage().paymentPage();
         creditPage.fillData(cardOne);
@@ -340,7 +368,8 @@ public class PurchaseTests {
         creditPage.fillData(cardOne);
         assertTrue(creditPage.inputInvalidIsNotVisible());
         assertTrue(creditPage.notificationOkIsVisible());
-        // добавить проверку БД
+        assertEquals(SQLHelper.findCreditStatus(), "APPROVED");
+        assertNotNull(SQLHelper.findCreditId());
     }
 
     // Дополнительные методы

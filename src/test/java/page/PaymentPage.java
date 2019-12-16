@@ -40,7 +40,7 @@ public class PaymentPage {
     }
 
     public boolean notificationErrorIsVisible() {
-        notificationError.waitUntil(Condition.visible, 7000);
+        notificationError.waitUntil(Condition.visible, 10000);
         notificationError.$(".icon").click();
         notificationOK.shouldNotBe(Condition.visible);
         return true;
