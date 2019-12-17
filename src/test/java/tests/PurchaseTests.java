@@ -49,7 +49,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Должен подтверждать оплату и создавать payment_id при валидных данных и карте со статусом APPROVED")
+    @DisplayName("Должен подтверждать покупку и создавать payment_id при валидных данных и карте со статусом APPROVED")
     void shouldConfirmPaymentWithValidDataCardOne() throws SQLException {
         assertTrue(paymentPage(cardOne).notificationOkIsVisible());
         assertEquals(SQLHelper.findPaymentStatus(), "APPROVED");
@@ -65,7 +65,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Не должен подтверждать оплату и создавать payment_id при использовании карты со статусом DECLINED")
+    @DisplayName("Не должен подтверждать покупку и создавать payment_id при использовании карты со статусом DECLINED")
     void shouldNotConfirmPaymentWithInvalidCardTwo() throws SQLException{
         assertTrue(paymentPage(cardTwo).notificationErrorIsVisible());
         assertEquals(SQLHelper.findPaymentStatus(), "DECLINED");
@@ -91,7 +91,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Не должен подтверждать оплату при невалидном номере карты")
+    @DisplayName("Не должен подтверждать покупку при невалидном номере карты")
     void shouldNotSubmitPaymentWithIllegalCard() throws SQLException {
         cardOne.setNumber("4444 4444 4444 4444");
         assertTrue(paymentPage(cardOne).notificationErrorIsVisible());
@@ -99,7 +99,7 @@ public class PurchaseTests {
 }
 
     @Test
-    @DisplayName("Оплата.После ввода валидного номера карты, предупреждающая надпись исчезает, оплата проходит успешно")
+    @DisplayName("Оплата.После ввода валидного номера карты, предупреждающая надпись исчезает, покупка проходит успешно")
     void shouldNotShowWarningIfValidCardNumberUpdatedForPayment() throws SQLException {
         cardOne.setNumber("4444 4444 44");
         val paymentPage = openStartPage().paymentPage();
@@ -159,7 +159,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Не должен подтверждать оплату, если введен несуществующий месяц")
+    @DisplayName("Не должен подтверждать покупку, если введен несуществующий месяц")
     void shouldNotConfirmPaymentWithInvalidMonth() throws SQLException {
         cardOne.setMonth("22");
         assertTrue(paymentPage(cardOne).inputInvalidMonth());
@@ -167,7 +167,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Не должен подтверждать оплату без указания года")
+    @DisplayName("Не должен подтверждать покупку без указания года")
     void shouldNotConfirmPaymentIfEmptyYear() throws SQLException {
         cardOne.setYear("");
         assertTrue(paymentPage(cardOne).inputInvalidFormat());
@@ -175,7 +175,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Не должен подтверждать оплату, если год меньше текущего")
+    @DisplayName("Не должен подтверждать покупку, если год меньше текущего")
     void shouldNotConfirmPaymentWithOldYear() throws SQLException {
         cardOne.setYear(setWrongYear());
         assertTrue(paymentPage(cardOne).inputInvalidExpireDate());
@@ -183,7 +183,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Оплата. После ввода валидной даты предупреждающая надпись исчезает, оплата проходит успешно")
+    @DisplayName("Купить. После ввода валидной даты предупреждающая надпись исчезает, покупка проходит успешно")
     void shouldNotShowWarningIfValidDateUpdatedForPayment() throws SQLException{
         cardOne.setMonth("");
         cardOne.setYear("");
@@ -211,7 +211,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Не должен подтверждать оплату, если введен несуществующий месяц")
+    @DisplayName("Не должен подтверждать кредит, если введен несуществующий месяц")
     void shouldNotConfirmCreditWithInvalidMonth() throws SQLException{
         cardOne.setMonth("22");
         assertTrue(creditPage(cardOne).inputInvalidMonth());
@@ -219,7 +219,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Не должен подтверждать оплату без указания года")
+    @DisplayName("Не должен подтверждать кредит без указания года")
     void shouldNotConfirmCreditIfEmptyYear() throws SQLException{
         cardOne.setYear("");
         assertTrue(creditPage(cardOne).inputInvalidFormat());
@@ -227,7 +227,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Не должен подтверждать оплату, если год меньше текущего")
+    @DisplayName("Не должен подтверждать кредит, если год меньше текущего")
     void shouldNotConfirmCreditWithOldYear() throws SQLException{
         cardOne.setYear(setWrongYear());
         assertTrue(creditPage(cardOne).inputInvalidExpireDate());
@@ -255,7 +255,7 @@ public class PurchaseTests {
     // Негативные сценарии с полем владелец при покупке:
 
     @Test
-    @DisplayName("Не должен подтверждать оплату без имени владельца")
+    @DisplayName("Не должен подтверждать покупку без имени владельца")
     void shouldNotConfirmPaymentWithoutOwner() throws SQLException{
         cardOne.setOwner("");
         assertTrue(paymentPage(cardOne).inputInvalidFillData());
@@ -271,7 +271,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Оплата. После ввода валидной информации в поле владелец, предупреждающая надпись исчезает, оплата проходит успешно")
+    @DisplayName("Покупка. После ввода валидной информации в поле владелец, предупреждающая надпись исчезает, покупка проходит успешно")
     void shouldNotShowWarningIfValidOwnerUpdatedForPayment() throws SQLException {
         cardOne.setOwner("");
         val paymentPage = openStartPage().paymentPage();
@@ -331,7 +331,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Оплата. После ввода валидной информации cvc/cvv, предупреждающая надпись исчезает, оплата проходит успешно")
+    @DisplayName("Покупка. После ввода валидной информации cvc/cvv, предупреждающая надпись исчезает, покупка проходит успешно")
     void shouldNotShowWarningIfValidCvcUpdatedForPayment() throws SQLException {
         cardOne.setCvc("");
         val paymentPage = openStartPage().paymentPage();
