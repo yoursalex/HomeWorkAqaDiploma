@@ -6,8 +6,7 @@ import lombok.val;
 
 public class SQLHelper {
 
-    private static final String url = "jdbc:mysql://localhost:3306/db?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
-   // private static final String url = "jdbc:postgresql://localhost:5432/db";
+    private static final String url = System.getProperty("db.url");
     private static final String user = "app";
     private static final String password = "pass";
 
