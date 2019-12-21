@@ -36,14 +36,19 @@ public class CreditPage {
     }
 
     public boolean notificationOkIsVisible() {
-        notificationOK.waitUntil(Condition.visible, 10000);
+        notificationOK.waitUntil(Condition.visible, 12000);
+        return true;
+    }
+
+    public boolean checkOkNotification() {
+        notificationOK.shouldNotBe(Condition.visible);
         return true;
     }
 
     public boolean notificationErrorIsVisible() {
-        notificationError.waitUntil(Condition.visible, 10000);
+        notificationError.waitUntil(Condition.visible, 12000);
         notificationError.$(".icon").click();
-        notificationOK.shouldNotBe(Condition.visible);
+        checkOkNotification();
         return true;
     }
 

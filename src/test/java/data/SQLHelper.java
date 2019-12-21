@@ -1,12 +1,12 @@
 package data;
 import java.sql.*;
-
 import com.mysql.cj.xdevapi.Result;
 import lombok.val;
 
 public class SQLHelper {
 
-    private static final String url = System.getProperty("db.url");
+  //  private static final String url = System.getProperty("db.url");
+    private static final String url = "jdbc:mysql://localhost:3306/app";
     private static final String user = "app";
     private static final String password = "pass";
 
@@ -27,25 +27,25 @@ public class SQLHelper {
     }
 
     public static String findPaymentStatus() throws SQLException{
-        String stmt = "select * from payment_entity order by id desc limit 1;";
+        String stmt = "select status from payment_entity order by id desc limit 1;";
         String label= "status";
         return getStatus(stmt, label);
     }
 
     public static String findCreditStatus() throws SQLException{
-        String stmt = "select distinct status from credit_request_entity order by id DESC limit 1;";
+        String stmt = "select status from credit_request_entity order by id desc limit 1;";
         String label = "status";
         return getStatus(stmt, label);
     }
 
     public static String findPaymentId() throws SQLException{
-        String stmt = "select distinct payment_id from order_entity order by id desc limit 1;";
+        String stmt = "select payment_id from order_entity order by id desc limit 1;";
         String label = "payment_id";
         return getStatus(stmt, label);
     }
 
     public static String findCreditId() throws SQLException{
-        String stmt = "select distinct credit_id from order_entity order by id desc limit 1;";
+        String stmt = "select credit_id from order_entity order by id desc limit 1;";
         String label = "credit_id";
         return getStatus(stmt, label);
     }
@@ -64,7 +64,7 @@ public class SQLHelper {
         PreparedStatement statement = connection.prepareStatement(stmt);
         ResultSet resultSet = statement.executeQuery();
         resultSet.next();
-        return resultSet.getNString(label);
+        return resultSet.getString(label);
     }
 
 }

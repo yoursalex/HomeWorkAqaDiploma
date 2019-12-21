@@ -99,7 +99,7 @@ public class PurchaseTests {
 }
 
     @Test
-    @DisplayName("Оплата.После ввода валидного номера карты, предупреждающая надпись исчезает, покупка проходит успешно")
+    @DisplayName("Покупка. После ввода валидного номера карты, предупреждающая надпись исчезает, покупка проходит успешно")
     void shouldNotShowWarningIfValidCardNumberUpdatedForPayment() throws SQLException {
         cardOne.setNumber("4444 4444 44");
         val paymentPage = openStartPage().paymentPage();
@@ -133,7 +133,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Кредит.После ввода валидного номера карты, предупреждающая надпись исчезает, кредит подтвержден")
+    @DisplayName("Кредит. После ввода валидного номера карты, предупреждающая надпись исчезает, кредит подтвержден")
     void shouldNotShowWarningIfValidCardNumberUpdatedForCredit() throws SQLException{
         cardOne.setNumber("4444 4444 44");
         val creditPage = openStartPage().creditPage();
@@ -183,7 +183,7 @@ public class PurchaseTests {
     }
 
     @Test
-    @DisplayName("Купить. После ввода валидной даты предупреждающая надпись исчезает, покупка проходит успешно")
+    @DisplayName("Покупка. После ввода валидной даты предупреждающая надпись исчезает, покупка проходит успешно")
     void shouldNotShowWarningIfValidDateUpdatedForPayment() throws SQLException{
         cardOne.setMonth("");
         cardOne.setYear("");
@@ -264,9 +264,9 @@ public class PurchaseTests {
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongOwner.cvs", numLinesToSkip = 1)
-    void shouldNotConfirmPaymentWithInvalidOwner(String owner) throws SQLException {
+    void shouldNotConfirmPaymentWithInvalidOwner(String owner, String message) throws SQLException {
         cardOne.setOwner(owner);
-        assertTrue(paymentPage(cardOne).inputInvalidFormat());
+        assertTrue(paymentPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -298,9 +298,9 @@ public class PurchaseTests {
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongOwner.cvs", numLinesToSkip = 1)
-    void shouldNotConfirmCreditWithInvalidOwner(String owner) throws SQLException{
+    void shouldNotConfirmCreditWithInvalidOwner(String owner, String message) throws SQLException{
         cardOne.setOwner(owner);
-        assertTrue(creditPage(cardOne).inputInvalidFormat());
+        assertTrue(creditPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -308,7 +308,7 @@ public class PurchaseTests {
     @DisplayName("Кредит. После ввода валидной информации в поле владелец, предупреждающая надпись исчезает, кредит подтвержден")
     void shouldNotShowWarningIfValidOwnerUpdatedForCredit() throws SQLException {
         cardOne.setOwner("");
-        val creditPage = openStartPage().paymentPage();
+        val creditPage = openStartPage().creditPage();
         creditPage.fillData(cardOne);
         assertTrue(creditPage.inputInvalidFillData());
         cardOne.setOwner(setFakeOwner());
@@ -324,9 +324,9 @@ public class PurchaseTests {
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongCvc.cvs", numLinesToSkip = 1)
-    void shouldNotConfirmPaymentWithInvalidCvc(String cvc) throws SQLException{
+    void shouldNotConfirmPaymentWithInvalidCvc(String cvc, String message) throws SQLException{
         cardOne.setCvc(cvc);
-        assertTrue(paymentPage(cardOne).inputInvalidFormat());
+        assertTrue(paymentPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -350,9 +350,9 @@ public class PurchaseTests {
 
     @ParameterizedTest
     @CsvFileSource(resources = "/wrongCvc.cvs", numLinesToSkip = 1)
-    void shouldNotConfirmCreditWithInvalidCvc(String cvc) throws SQLException {
+    void shouldNotConfirmCreditWithInvalidCvc(String cvc, String message) throws SQLException {
         cardOne.setCvc(cvc);
-        assertTrue(creditPage(cardOne).inputInvalidFormat());
+        assertTrue(creditPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -360,7 +360,7 @@ public class PurchaseTests {
     @DisplayName("Кредит. После ввода валидной информации cvc/cvv, предупреждающая надпись исчезает, кредит подтвержден")
     void shouldNotShowWarningIfValidCvcUpdatedForCredit() throws SQLException{
         cardOne.setCvc("");
-        val creditPage = openStartPage().paymentPage();
+        val creditPage = openStartPage().creditPage();
         creditPage.fillData(cardOne);
         assertTrue(creditPage.inputInvalidFillData());
         cardOne.setCvc(randomCvc());
