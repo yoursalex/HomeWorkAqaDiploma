@@ -19,11 +19,11 @@ docker-compose up -d --build
 * aqa-shop.jar 
     * Для запуска под MySQL использовать команду 
     ```
-    java -Dspring.datasource.url=jdbc:mysql://localhost:3306/app -jar aqa-shop.jar
+    java -Dspring.datasource.url=jdbc:mysql://localhost:3306/app -jar artifacts/aqa-shop.jar
     ```
     * Для запуска под PostgreSQL использовать команду 
     ```
-    java -Dspring.datasource.url=jdbc:postgresql://localhost:5432/app -jar aqa-shop.jar
+    java -Dspring.datasource.url=jdbc:postgresql://localhost:5432/app -jar artifacts/aqa-shop.jar
     ```
 * Тесты (Gradlew + Allure)
    * Для запуска под MySQL использовать команду 
