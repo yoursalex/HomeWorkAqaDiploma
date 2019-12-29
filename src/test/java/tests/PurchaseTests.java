@@ -9,8 +9,8 @@ import org.junit.jupiter.api.*;
 import lombok.val;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
-import page.CreditPage;
-import page.PaymentPage;
+import page.openCreditPage;
+import page.openPaymentPage;
 import page.StartPage;
 
 import java.sql.SQLException;
@@ -380,13 +380,13 @@ public class PurchaseTests {
         return startPage;
     }
 
-    public PaymentPage paymentPage(Card card) {
+    public openPaymentPage paymentPage(Card card) {
         val paymentPage = openStartPage().paymentPage();
         paymentPage.fillData(card);
         return paymentPage;
     }
 
-    public CreditPage creditPage(Card card) {
+    public openCreditPage creditPage(Card card) {
         val creditPage = openStartPage().creditPage();
         creditPage.fillData(card);
         return creditPage;

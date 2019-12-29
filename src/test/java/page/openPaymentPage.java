@@ -9,7 +9,7 @@ import org.openqa.selenium.Keys;
 import static com.codeborne.selenide.Selectors.*;
 import static com.codeborne.selenide.Selenide.$;
 
-public class PaymentPage {
+public class openPaymentPage {
     private SelenideElement header = $(By.cssSelector("h3"));
     private SelenideElement cardNumberField = $(byText("Номер карты")).parent().$(byCssSelector(".input__control"));
     private SelenideElement monthField = $(byText("Месяц")).parent().$(byCssSelector(".input__control"));
@@ -21,7 +21,7 @@ public class PaymentPage {
     private SelenideElement notificationError = $(byCssSelector(".notification_status_error"));
     private SelenideElement inputInvalid = $(".input__sub");
 
-    public PaymentPage() {
+    public openPaymentPage() {
         header.shouldBe(Condition.visible);
     }
 

@@ -9,14 +9,14 @@ public class StartPage {
     private SelenideElement buyButton = $$(By.cssSelector("button")).first();
     private SelenideElement creditButton = $$(By.cssSelector("button")).last();
 
-    public PaymentPage paymentPage() {
+    public openPaymentPage paymentPage() {
         buyButton.click();
-        return new PaymentPage();
+        return new openPaymentPage();
     }
 
-    public CreditPage creditPage() {
+    public openCreditPage creditPage() {
         creditButton.click();
-        return new CreditPage();
+        return new openCreditPage();
     }
 
 }
