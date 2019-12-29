@@ -9,7 +9,7 @@
 [Все найденные баги заведены в issues](https://github.com/yoursalex/HomeWorkAqaDiploma/issues) 
 
 * файл docker-compose.yml находится в текущей папке
-* файл application.properties и aqa-shop.jar находятся в папке artifacts 
+* файл application.properties находится в корневой папке, файл aqa-shop.jar находятся в папке artifacts 
 
 * Docker. Для запуска MySql, PostgreSQL и Node.js использовать команду 
 ```
