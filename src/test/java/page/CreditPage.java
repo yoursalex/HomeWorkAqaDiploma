@@ -10,7 +10,7 @@ import static com.codeborne.selenide.Selectors.byCssSelector;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
 
-public class openCreditPage {
+public class CreditPage {
     private SelenideElement header = $(By.cssSelector("h3"));
     private SelenideElement cardNumberField = $(byText("Номер карты")).parent().$(byCssSelector(".input__control"));
     private SelenideElement monthField = $(byText("Месяц")).parent().$(byCssSelector(".input__control"));
@@ -22,7 +22,7 @@ public class openCreditPage {
     private SelenideElement notificationError = $(byCssSelector(".notification_status_error"));
     private SelenideElement inputInvalid = $(".input__sub");
 
-    public openCreditPage() {
+    public CreditPage() {
         header.shouldBe(Condition.visible);
     }
 

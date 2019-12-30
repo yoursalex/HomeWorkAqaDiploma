@@ -9,8 +9,8 @@ import org.junit.jupiter.api.*;
 import lombok.val;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
-import page.openCreditPage;
-import page.openPaymentPage;
+import page.CreditPage;
+import page.PaymentPage;
 import page.StartPage;
 
 import java.sql.SQLException;
@@ -51,7 +51,7 @@ public class PurchaseTests {
     @Test
     @DisplayName("Должен подтверждать покупку и создавать payment_id при валидных данных и карте со статусом APPROVED")
     void shouldConfirmPaymentWithValidDataCardOne() throws SQLException {
-        assertTrue(paymentPage(cardOne).notificationOkIsVisible());
+        assertTrue(openAndFillPaymentPage(cardOne).notificationOkIsVisible());
         assertEquals(SQLHelper.findPaymentStatus(), "APPROVED");
         assertNotNull(SQLHelper.findPaymentId());
     }
@@ -59,7 +59,7 @@ public class PurchaseTests {
     @Test
     @DisplayName("Должен подтверждать кредит и создавать credit_id при валидных данных и карте со статусом APPROVED")
     void shouldConfirmCreditWithValidDataCardOne() throws SQLException {
-        assertTrue(creditPage(cardOne).notificationOkIsVisible());
+        assertTrue(openAndFillCreditPage(cardOne).notificationOkIsVisible());
         assertEquals(SQLHelper.findCreditStatus(), "APPROVED");
         assertNotNull(SQLHelper.findCreditId());
     }
@@ -67,7 +67,7 @@ public class PurchaseTests {
     @Test
     @DisplayName("Не должен подтверждать покупку и создавать payment_id при использовании карты со статусом DECLINED")
     void shouldNotConfirmPaymentWithInvalidCardTwo() throws SQLException{
-        assertTrue(paymentPage(cardTwo).notificationErrorIsVisible());
+        assertTrue(openAndFillPaymentPage(cardTwo).notificationErrorIsVisible());
         assertEquals(SQLHelper.findPaymentStatus(), "DECLINED");
         assertNull(SQLHelper.findPaymentId());
     }
@@ -75,7 +75,7 @@ public class PurchaseTests {
     @Test
     @DisplayName("Не должен подтверждать кредит и создавать credit_id при использовании карты со статусом DECLINED")
     void shouldNotConfirmCreditWithInvalidCardTwo() throws SQLException {
-        assertTrue(creditPage(cardTwo).notificationErrorIsVisible());
+        assertTrue(openAndFillCreditPage(cardTwo).notificationErrorIsVisible());
         assertEquals(SQLHelper.findCreditStatus(), "DECLINED");
         assertNull(SQLHelper.findCreditId());
     }
@@ -86,7 +86,7 @@ public class PurchaseTests {
     @CsvFileSource(resources = "/wrongCard.cvs", numLinesToSkip = 1)
     void shouldNotSubmitPaymentWithWrongNumber(String number, String message) throws SQLException {
         cardOne.setNumber(number);
-        assertTrue(paymentPage(cardOne).inputInvalidFormat(), message);
+        assertTrue(openAndFillPaymentPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -94,7 +94,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать покупку при невалидном номере карты")
     void shouldNotSubmitPaymentWithIllegalCard() throws SQLException {
         cardOne.setNumber("4444 4444 4444 4444");
-        assertTrue(paymentPage(cardOne).notificationErrorIsVisible());
+        assertTrue(openAndFillPaymentPage(cardOne).notificationErrorIsVisible());
         assertFalse(SQLHelper.isNotEmpty());
 }
 
@@ -104,7 +104,7 @@ public class PurchaseTests {
         cardOne.setNumber("4444 4444 44");
         val paymentPage = openStartPage().paymentPage();
         paymentPage.fillData(cardOne);
-        assertTrue(paymentPage(cardOne).inputInvalidFormat());
+        assertTrue(openAndFillPaymentPage(cardOne).inputInvalidFormat());
         cardOne.setNumber("4444 4444 4444 4441");
         paymentPage.cleanData();
         paymentPage.fillData(cardOne);
@@ -120,7 +120,7 @@ public class PurchaseTests {
     @CsvFileSource(resources = "/wrongCard.cvs", numLinesToSkip = 1)
     void shouldNotSubmitCreditWithWrongNumber(String number, String message) throws SQLException {
         cardOne.setNumber(number);
-        assertTrue(creditPage(cardOne).inputInvalidFormat(), message);
+        assertTrue(openAndFillCreditPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -128,7 +128,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать кредит при невалидном номере карты")
     void shouldNotSubmitCreditWithIllegalCard() throws SQLException{
         cardOne.setNumber("4444 4444 4444 4444");
-        assertTrue(creditPage(cardOne).notificationErrorIsVisible());
+        assertTrue(openAndFillCreditPage(cardOne).notificationErrorIsVisible());
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -154,7 +154,7 @@ public class PurchaseTests {
     @CsvFileSource(resources = "/wrongMonth.cvs", numLinesToSkip = 1)
     void shouldNotSubmitPaymentWithWrongMonth(String month, String message) throws SQLException {
         cardOne.setMonth(month);
-        assertTrue((paymentPage(cardOne).inputInvalidFormat()), message);
+        assertTrue((openAndFillPaymentPage(cardOne).inputInvalidFormat()), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -162,7 +162,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать покупку, если введен несуществующий месяц")
     void shouldNotConfirmPaymentWithInvalidMonth() throws SQLException {
         cardOne.setMonth("22");
-        assertTrue(paymentPage(cardOne).inputInvalidMonth());
+        assertTrue(openAndFillPaymentPage(cardOne).inputInvalidMonth());
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -170,7 +170,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать покупку без указания года")
     void shouldNotConfirmPaymentIfEmptyYear() throws SQLException {
         cardOne.setYear("");
-        assertTrue(paymentPage(cardOne).inputInvalidFormat());
+        assertTrue(openAndFillPaymentPage(cardOne).inputInvalidFormat());
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -178,7 +178,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать покупку, если год меньше текущего")
     void shouldNotConfirmPaymentWithOldYear() throws SQLException {
         cardOne.setYear(setWrongYear());
-        assertTrue(paymentPage(cardOne).inputInvalidExpireDate());
+        assertTrue(openAndFillPaymentPage(cardOne).inputInvalidExpireDate());
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -206,7 +206,7 @@ public class PurchaseTests {
     @CsvFileSource(resources = "/wrongMonth.cvs", numLinesToSkip = 1)
     void shouldNotSubmitCreditWithWrongMonth(String month, String message) throws SQLException{
         cardOne.setMonth(month);
-        assertTrue((creditPage(cardOne).inputInvalidFormat()), message);
+        assertTrue((openAndFillCreditPage(cardOne).inputInvalidFormat()), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -214,7 +214,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать кредит, если введен несуществующий месяц")
     void shouldNotConfirmCreditWithInvalidMonth() throws SQLException{
         cardOne.setMonth("22");
-        assertTrue(creditPage(cardOne).inputInvalidMonth());
+        assertTrue(openAndFillCreditPage(cardOne).inputInvalidMonth());
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -222,7 +222,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать кредит без указания года")
     void shouldNotConfirmCreditIfEmptyYear() throws SQLException{
         cardOne.setYear("");
-        assertTrue(creditPage(cardOne).inputInvalidFormat());
+        assertTrue(openAndFillCreditPage(cardOne).inputInvalidFormat());
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -230,7 +230,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать кредит, если год меньше текущего")
     void shouldNotConfirmCreditWithOldYear() throws SQLException{
         cardOne.setYear(setWrongYear());
-        assertTrue(creditPage(cardOne).inputInvalidExpireDate());
+        assertTrue(openAndFillCreditPage(cardOne).inputInvalidExpireDate());
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -258,7 +258,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать покупку без имени владельца")
     void shouldNotConfirmPaymentWithoutOwner() throws SQLException{
         cardOne.setOwner("");
-        assertTrue(paymentPage(cardOne).inputInvalidFillData());
+        assertTrue(openAndFillPaymentPage(cardOne).inputInvalidFillData());
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -266,7 +266,7 @@ public class PurchaseTests {
     @CsvFileSource(resources = "/wrongOwner.cvs", numLinesToSkip = 1)
     void shouldNotConfirmPaymentWithInvalidOwner(String owner, String message) throws SQLException {
         cardOne.setOwner(owner);
-        assertTrue(paymentPage(cardOne).inputInvalidFormat(), message);
+        assertTrue(openAndFillPaymentPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -292,7 +292,7 @@ public class PurchaseTests {
     @DisplayName("Не должен подтверждать кредит без имени владельца")
     void shouldNotConfirmCreditWithoutOwner() throws SQLException{
         cardOne.setOwner("");
-        assertTrue(creditPage(cardOne).inputInvalidFillData());
+        assertTrue(openAndFillCreditPage(cardOne).inputInvalidFillData());
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -300,7 +300,7 @@ public class PurchaseTests {
     @CsvFileSource(resources = "/wrongOwner.cvs", numLinesToSkip = 1)
     void shouldNotConfirmCreditWithInvalidOwner(String owner, String message) throws SQLException{
         cardOne.setOwner(owner);
-        assertTrue(creditPage(cardOne).inputInvalidFormat(), message);
+        assertTrue(openAndFillCreditPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -326,7 +326,7 @@ public class PurchaseTests {
     @CsvFileSource(resources = "/wrongCvc.cvs", numLinesToSkip = 1)
     void shouldNotConfirmPaymentWithInvalidCvc(String cvc, String message) throws SQLException{
         cardOne.setCvc(cvc);
-        assertTrue(paymentPage(cardOne).inputInvalidFormat(), message);
+        assertTrue(openAndFillPaymentPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -352,7 +352,7 @@ public class PurchaseTests {
     @CsvFileSource(resources = "/wrongCvc.cvs", numLinesToSkip = 1)
     void shouldNotConfirmCreditWithInvalidCvc(String cvc, String message) throws SQLException {
         cardOne.setCvc(cvc);
-        assertTrue(creditPage(cardOne).inputInvalidFormat(), message);
+        assertTrue(openAndFillCreditPage(cardOne).inputInvalidFormat(), message);
         assertFalse(SQLHelper.isNotEmpty());
     }
 
@@ -374,25 +374,25 @@ public class PurchaseTests {
 
     // Дополнительные методы
 
-    public StartPage openStartPage() {
+    private StartPage openStartPage() {
         open("http://localhost:8080/");
         val startPage = new StartPage();
         return startPage;
     }
 
-    public openPaymentPage paymentPage(Card card) {
+    private PaymentPage openAndFillPaymentPage(Card card) {
         val paymentPage = openStartPage().paymentPage();
         paymentPage.fillData(card);
         return paymentPage;
     }
 
-    public openCreditPage creditPage(Card card) {
+    private CreditPage openAndFillCreditPage(Card card) {
         val creditPage = openStartPage().creditPage();
         creditPage.fillData(card);
         return creditPage;
     }
 
-    public void setCards() {
+    private void setCards() {
         cardOne.setNumber("4444 4444 4444 4441");
         cardTwo.setNumber("4444 4444 4444 4442");
         invalidNumberCard.setNumber("4444 4444 4444 4444");
@@ -406,26 +406,26 @@ public class PurchaseTests {
         cardTwo.setCvc(randomCvc());
     }
 
-    public String setCorrectYear() {
+    private String setCorrectYear() {
         LocalDate date = LocalDate.now().plusYears(2);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy");
         String year = date.format(formatter);
         return year;
     }
 
-    public String setWrongYear() {
+    private String setWrongYear() {
         LocalDate date = LocalDate.now().minusYears(2);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy");
         String year = date.format(formatter);
         return year;
     }
 
-    public String setFakeOwner() {
+   private String setFakeOwner() {
         String owner = faker.name().fullName();
         return owner;
     }
 
-    public String randomCvc() {
+    private String randomCvc() {
         String[] cvcOptions = {"123", "999", "985", "015", "888", "656", "001", "234", "601", "111"};
         int chooseCvc =(int) (Math.random()*cvcOptions.length);
         String cvc = cvcOptions[chooseCvc];
